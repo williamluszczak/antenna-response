@@ -324,7 +324,7 @@ class waveform:
         self.filter = filtering
         
     
-    def calc_fft(self, rfft: bool = False, ignore_DC: bool = True) -> tuple[np.ndarray,np.ndarray,np.ndarray]:
+    def calc_fft(self, rfft: bool = False, ignore_DC: bool = True):
         '''
         Calculate the waveform's discrete Fourier transformation.
 
