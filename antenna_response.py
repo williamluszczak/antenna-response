@@ -232,7 +232,6 @@ class antenna_response:
         return this_sig
     
     def calc_imp_resp(self, angle=0) -> interp1d:
-        warn("WARNING [antenna_response.impulse_response()]: THIS METHOD IS NOT YET COMPLETE.")
         
         # get pulser and signal, fHz should be the same for both (if same samplerate)
         #bs = self.boresight
@@ -304,54 +303,16 @@ class antenna_response:
         # other methods...
         
         # unwrap phase to take the sqrt
-        IRfft2mag = np.abs(IRfft2)
-        IRfft2phi = np.angle(IRfft2)
-        IRfft2phiunwrapped = np.unwrap(IRfft2phi)
-        
         IRfft2magw = np.abs(IRfft2w)
         IRfft2phiw = np.angle(IRfft2w)
-        IRfft2phiunwrappedw = np.unwrap(IRfft2phiw)
-        
+        IRfft2phiunwrappedw =  np.unwrap(IRfft2phiw, period=np.pi)-np.pi
+
         # take the sqrt (half of the phase)
-        phases = 0.5 * IRfft2phiunwrapped
-        phases = (phases + np.pi) % (2 * np.pi) - np.pi  # wrap again (do we need to do this?)
-        IRfft = np.sqrt(IRfft2mag) * np.exp(1j * phases)
-        
+
         phasesw = 0.5 * IRfft2phiunwrappedw
-        phasesw = (phasesw + np.pi) % (2 * np.pi) - np.pi  # wrap again (do we need to do this?)
         IRfftw = np.sqrt(IRfft2magw) * np.exp(1j * phasesw)
-        
-        # ------
-        
-        #ax = plt.subplots(figsize=(30,15))[1]
-        #ax.plot(np.fft.fftshift(fHz*1e-9), np.fft.fftshift(10*np.log10(np.abs(IRfft)**2/50)), ls="--", lw=6, c='black',label="Simple Division")
-        #ax.plot(np.fft.fftshift(fHz*1e-9), np.fft.fftshift(10*np.log10(np.abs(IRfftw)**2/50)), lw=6, c='black', label="Wiener Deconvolution")
-        # ax.plot(fHz*1e-9, 10*np.log10(np.abs(IRfft)**2/50), ls="--", lw=6, c='black',label="Simple Division")
-        # ax.plot(fHz*1e-9, 10*np.log10(np.abs(IRfftw)**2/50), lw=6, c='black', label="Wiener Deconvolution")
-        #ax.set(xlim=(0,None), xlabel="f [GHz]", ylabel=r"$10\log{$|fft|$^2/50}$ [dB]")
-        #ax.set_title(antennas.catalog[bs.Rx[0]] + " Impulse Response FFT")
-        
-        pueoband = np.logical_and(0.3e9 < fHz, fHz < 0.7e9)
-        int_power = 2*np.sum(np.abs(IRfftw[pueoband])**2/50) / IRfftw[pueoband].size #, dx=fHz[1]-fHz[0])#, x=fHz[pueoband])
-        
-        #dBmin, dBmax = ax.get_ylim()
-        #fmin, fmax = ax.get_xlim()
-        #ax.axvline(x=0.3, c='gray', ls='--', lw=4, label="PUEO Band")
-        #ax.axvline(x=1.2, c='gray', ls='--', lw=4)
-        ##ax.axvspan(0, 0.3, facecolor='grey', alpha=0.2)
-        #ax.axvspan(1.2, fmax, facecolor='grey', alpha=0.2)
-        
-        #ax.add_artist(AnchoredText("Integrated Power In Band: {:0.3} W".format(int_power), loc="lower right", frameon=True))
-        
-        #leg = ax.legend(loc="lower left")
-        #for line in leg.get_lines(): 
-        #    line.set_linewidth(15)
-        
-        # ------
-        
-        # inverse fft
+
         IRfftw = np.insert(IRfftw, 0, 0)
-        # print(IRfft)
         imp_resp = np.fft.fftshift(np.fft.ifft(IRfftw))
         # imp_resp = np.fft.irfft(IRfftw)
         
@@ -372,7 +333,6 @@ class antenna_response:
     @property
     def impulse_response(self, angle=0) -> interp1d:
         
-        warn("WARNING [antenna_response.impulse_response()]: THIS METHOD IS NOT YET COMPLETE.")
         
         # get pulser and signal, fHz should be the same for both (if same samplerate)
         bs = [sig for sig in self.signals if sig.angle == angle][0]
@@ -467,7 +427,7 @@ class antenna_response:
         
         IRfft2magw = np.abs(IRfft2w)
         IRfft2phiw = np.angle(IRfft2w)
-        IRfft2phiunwrappedw = np.unwrap(IRfft2phiw)
+        IRfft2phiunwrappedw = np.unwrap(IRfft2phiw, period=np.pi)-np.pi
         
         # take the sqrt (half of the phase)
         phases = 0.5 * IRfft2phiunwrapped
